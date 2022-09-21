@@ -6,12 +6,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class UserHelper {
-    public static String registerValidate(RegisterRequest registerRequest) {
+    public static void registerValidate(RegisterRequest registerRequest) {
         if (registerRequest.getEmail() == null ||
                 registerRequest.getPassword() == null ||
                 registerRequest.getFirstName() == null ||
                 registerRequest.getLastName() == null
-        ) return "All field is required.";
+        ) throw new RuntimeException("All field is required.");
 
         Pattern patternEmail = Pattern.compile("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$");
         Matcher matcherEmail = patternEmail.matcher(registerRequest.getEmail());
@@ -27,20 +27,18 @@ public class UserHelper {
         Matcher matcherPassOneSpecialChar = patternPassOneSpecialChar.matcher(registerRequest.getPassword());
 
 
-        if (registerRequest.getEmail().length() < 5) return "Email has must least 5 characters.";
+        if (registerRequest.getEmail().length() < 5) throw new RuntimeException("Email has must least 5 characters.");
 
-        if (!matcherEmail.matches()) return "Email invalid.";
+        if (!matcherEmail.matches()) throw new RuntimeException("Email invalid.");
 
-        if (!matcherPassOneLowercase.find()) return "Password has must least 1 lowercase letter.";
+        if (!matcherPassOneLowercase.find()) throw new RuntimeException("Password has must least 1 lowercase letter.");
 
-        if (!matcherPassOneUppercase.find()) return "Password has must least 1 uppercase letter.";
+        if (!matcherPassOneUppercase.find()) throw new RuntimeException("Password has must least 1 uppercase letter.");
 
-        if (!matcherPassOneDigit.find()) return "Password has must least 1 digit.";
+        if (!matcherPassOneDigit.find()) throw new RuntimeException("Password has must least 1 digit.");
 
-        if (!matcherPassOneSpecialChar.find()) return "Password has must least 1 special character.";
+        if (!matcherPassOneSpecialChar.find()) throw new RuntimeException("Password has must least 1 special letter.");
 
-        if (!matcherPassLength.matches()) return "Password has must least 8 characters.";
-
-        return "";
+        if (!matcherPassLength.matches()) throw new RuntimeException("Password has must least 8 characters.");
     }
 }

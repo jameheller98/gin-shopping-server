@@ -60,12 +60,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterResponse registerUser(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            return AuthMapper.getInstance().toRegisterResponse("Error: Email is already taken!");
+            throw new RuntimeException("Email is already taken.");
         }
 
-        if (UserHelper.registerValidate(registerRequest).length() > 0) {
-            return AuthMapper.getInstance().toRegisterResponse(UserHelper.registerValidate(registerRequest));
-        }
+        UserHelper.registerValidate(registerRequest);
 
         registerRequest.setPassword(encoder.encode(registerRequest.getPassword()));
         UserEntity userEntity = AuthMapper.getInstance().toUserEntity(registerRequest);
