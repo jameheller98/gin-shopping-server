@@ -40,10 +40,11 @@ public class AuthMapper {
         return registerResponse;
     }
 
-    public LoginResponse toLoginResponse(String jwt) {
+    public LoginResponse toLoginResponse(String jwt, String refreshToken) {
         LoginResponse loginResponse = new LoginResponse();
 
         loginResponse.setJwt(jwt);
+        loginResponse.setRefreshToken(refreshToken);
 
         return loginResponse;
     }

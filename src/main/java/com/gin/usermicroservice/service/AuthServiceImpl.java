@@ -1,14 +1,12 @@
 package com.gin.usermicroservice.service;
 
+import com.gin.usermicroservice.domain.RefreshTokenEntity;
 import com.gin.usermicroservice.domain.RoleEntity;
 import com.gin.usermicroservice.domain.RoleEnum;
 import com.gin.usermicroservice.domain.UserEntity;
 import com.gin.usermicroservice.repository.RoleRepository;
 import com.gin.usermicroservice.repository.UserRepository;
-import com.gin.usermicroservice.resource.dto.LoginRequest;
-import com.gin.usermicroservice.resource.dto.LoginResponse;
-import com.gin.usermicroservice.resource.dto.RegisterRequest;
-import com.gin.usermicroservice.resource.dto.RegisterResponse;
+import com.gin.usermicroservice.resource.dto.*;
 import com.gin.usermicroservice.security.JwtUtils;
 import com.gin.usermicroservice.security.UserDetailsImpl;
 import com.gin.usermicroservice.service.map.AuthMapper;
@@ -23,15 +21,13 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class AuthServiceImpl implements AuthService {
     @Autowired
-    PasswordEncoder encoder;
+    private PasswordEncoder encoder;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
@@ -40,6 +36,8 @@ public class AuthServiceImpl implements AuthService {
     private UserRepository userRepository;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private RefreshTokenService refreshTokenService;
 
     @Override
     public LoginResponse loginUser(LoginRequest loginRequest) {
@@ -47,14 +45,14 @@ public class AuthServiceImpl implements AuthService {
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
 
-        return AuthMapper.getInstance().toLoginResponse(jwt);
+        String jwt = jwtUtils.generateJwtToken(userDetails);
+
+        RefreshTokenEntity refreshTokenEntity = refreshTokenService.createRefreshToken(userDetails.getId());
+
+        return AuthMapper.getInstance().toLoginResponse(jwt, refreshTokenEntity.getToken());
     }
 
     @Override
@@ -93,5 +91,16 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(userEntity);
 
         return AuthMapper.getInstance().toRegisterResponse("User registered successfully!");
+    }
+
+    @Override
+    public MessageResponse logoutUser() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Long userId = userDetails.getId();
+
+        refreshTokenService.deleteByUserId(userId);
+
+        return new MessageResponse("Log out successful!");
     }
 }

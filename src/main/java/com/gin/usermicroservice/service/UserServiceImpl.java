@@ -12,7 +12,7 @@ import javax.transaction.Transactional;
 @Transactional
 public class UserServiceImpl implements UserService {
     @Override
-    public UserResponse getInfoUser(String token) {
+    public UserResponse getInfoUser() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return AuthMapper.getInstance().toUserResponse(userDetails);
