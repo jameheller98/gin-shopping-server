@@ -5,7 +5,7 @@ import com.gin.usermicroservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "https://gin-shopping-client.vercel.app/", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/gin/user")
 public class UserController {
