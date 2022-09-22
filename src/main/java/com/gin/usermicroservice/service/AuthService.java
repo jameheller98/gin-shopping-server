@@ -1,11 +1,14 @@
 package com.gin.usermicroservice.service;
 
-import com.gin.usermicroservice.resource.dto.*;
+import com.gin.usermicroservice.resource.dto.LoginRequest;
+import com.gin.usermicroservice.resource.dto.LoginResponse;
+import com.gin.usermicroservice.resource.dto.MessageResponse;
+import com.gin.usermicroservice.resource.dto.RegisterRequest;
 
 public interface AuthService {
     LoginResponse loginUser(LoginRequest loginRequest);
 
-    RegisterResponse registerUser(RegisterRequest registerRequest);
+    MessageResponse registerUser(RegisterRequest registerRequest);
 
-    MessageResponse logoutUser();
+    MessageResponse logoutUser(Long userId);
 }

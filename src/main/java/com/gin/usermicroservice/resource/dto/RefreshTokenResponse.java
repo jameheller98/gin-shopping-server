@@ -1,6 +1,9 @@
 package com.gin.usermicroservice.resource.dto;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor
 @Getter
@@ -11,7 +14,7 @@ public class RefreshTokenResponse {
     private String tokenType = "Bearer";
 
     @Builder
-    public RefreshTokenResponse(String token , String refreshToken) {
+    public RefreshTokenResponse(String token, String refreshToken) {
         this.token = token;
         this.refreshToken = refreshToken;
     }

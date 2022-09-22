@@ -22,7 +22,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public RegisterResponse registerUser(@RequestBody RegisterRequest registerRequest) {
+    public MessageResponse registerUser(@RequestBody RegisterRequest registerRequest) {
         return authService.registerUser(registerRequest);
     }
 
@@ -32,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public MessageResponse logoutUser() {
-        return authService.logoutUser();
+    public MessageResponse logoutUser(@RequestHeader("userId") Long userId) {
+        return authService.logoutUser(userId);
     }
 }

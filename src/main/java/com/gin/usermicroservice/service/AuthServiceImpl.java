@@ -6,7 +6,10 @@ import com.gin.usermicroservice.domain.RoleEnum;
 import com.gin.usermicroservice.domain.UserEntity;
 import com.gin.usermicroservice.repository.RoleRepository;
 import com.gin.usermicroservice.repository.UserRepository;
-import com.gin.usermicroservice.resource.dto.*;
+import com.gin.usermicroservice.resource.dto.LoginRequest;
+import com.gin.usermicroservice.resource.dto.LoginResponse;
+import com.gin.usermicroservice.resource.dto.MessageResponse;
+import com.gin.usermicroservice.resource.dto.RegisterRequest;
 import com.gin.usermicroservice.security.JwtUtils;
 import com.gin.usermicroservice.security.UserDetailsImpl;
 import com.gin.usermicroservice.service.map.AuthMapper;
@@ -15,13 +18,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -39,6 +45,7 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private RefreshTokenService refreshTokenService;
 
+
     @Override
     public LoginResponse loginUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
@@ -48,15 +55,19 @@ public class AuthServiceImpl implements AuthService {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        String jwt = jwtUtils.generateJwtToken(userDetails);
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        String token = jwtUtils.generateJwtToken(userDetails);
 
         RefreshTokenEntity refreshTokenEntity = refreshTokenService.createRefreshToken(userDetails.getId());
 
-        return AuthMapper.getInstance().toLoginResponse(jwt, refreshTokenEntity.getToken());
+        return AuthMapper.getInstance().toLoginResponse(token, refreshTokenEntity.getToken(), userDetails, roles);
     }
 
     @Override
-    public RegisterResponse registerUser(RegisterRequest registerRequest) {
+    public MessageResponse registerUser(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new RuntimeException("Email is already taken.");
         }
@@ -94,11 +105,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public MessageResponse logoutUser() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Long userId = userDetails.getId();
-
+    public MessageResponse logoutUser(Long userId) {
         refreshTokenService.deleteByUserId(userId);
 
         return new MessageResponse("Log out successful!");
